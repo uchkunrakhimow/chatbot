@@ -1,0 +1,9 @@
+.vscode
+.idea
+
+dist
+logs
+
+node_modules
+
+pnpm-lock.yaml

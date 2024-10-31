@@ -1,0 +1,23 @@
+{
+  "name": "@chatbot/mono",
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "ENV_FILE=.env.development pnpm --parallel --stream -r run dev",
+    "build": "pnpm --stream -r run build"
+  },
+  "author": {
+    "name": "Uchkun Rakhimov",
+    "url": "https://github.com/uchkunrakhimow"
+  },
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3"
+  },
+  "lint-staged": {
+    "*": "prettier --ignore-unknown --write"
+  }
+}
