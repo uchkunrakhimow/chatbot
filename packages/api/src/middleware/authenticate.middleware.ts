@@ -1,38 +1,57 @@
-import jwt from "jsonwebtoken";
-const secretKey = 'secret_key';
-import { Request, Response, NextFunction } from "express";
+import { verify, sign } from 'jsonwebtoken'
+import { Request, Response, NextFunction } from 'express'
+
+const jwtAccessSecret = process.env.JWT_ACCESS_SECRET_KEY!
+const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET_KEY!
+const jwtAccessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN!
 
 interface CustomRequest extends Request {
-  user?: any;
+  user?: any
 }
 
-export const authenticate = (req: CustomRequest, res: Response, next: NextFunction) => {
-  const accessToken = req.headers['authorization']!;
-  const refreshToken = req.cookies['refreshToken']!;
+const AuthenticateMiddleware = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
+  const accessToken: string | any = req.headers['authorization']?.split(' ')[1] // Split for 'Bearer token'
+  const refreshToken = req.cookies['refreshToken']
 
+  // Check if tokens are provided
   if (!accessToken && !refreshToken) {
-    return res.status(401).send('Access Denied. No token provided.');
+    res.status(401).send('Access Denied. No token provided.')
   }
 
+  // Try to verify the access token
   try {
-    const decoded = jwt.verify(accessToken, secretKey);
-    req.user = decoded;
-    next();
+    const decoded = verify(accessToken, jwtAccessSecret)
+    req.user = decoded // Attach decoded user information to request
+    next()
   } catch (error) {
+    // Access token is invalid; check for refresh token
     if (!refreshToken) {
-      return res.status(401).send('Access Denied. No refresh token provided.');
+      res.status(401).send('Access Denied. No refresh token provided.')
     }
 
+    // Attempt to verify the refresh token
     try {
-      const decoded = jwt.verify(refreshToken, secretKey);
-      const accessToken = jwt.sign({ user: decoded }, secretKey, { expiresIn: '1h' });
+      const decoded = verify(refreshToken, jwtRefreshSecret)
+      const newAccessToken = sign({ user: decoded }, jwtAccessSecret, {
+        expiresIn: jwtAccessExpiresIn,
+      })
 
+      // Set the new access token in the response header
       res
-        .cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict' })
-        .header('Authorization', accessToken)
-        .send(decoded);
+        .cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          sameSite: 'strict',
+        })
+        .header('Authorization', newAccessToken)
+        .send(decoded) // Sending the decoded user information
     } catch (error) {
-      return res.status(400).send('Invalid Token.');
+      res.status(400).send('Invalid Token.')
     }
   }
-};
+}
+
+export default AuthenticateMiddleware

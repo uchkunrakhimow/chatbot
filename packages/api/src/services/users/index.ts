@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { User } from '../models/user.model'
-import { IUser } from './../types/models';
+import { User } from '../../models/user.model'
+import { IUser } from './../../types/models'
 
 class UserService {
   /**
@@ -23,10 +23,7 @@ class UserService {
    * @param username - Username of the user
    * @param password - Password provided by the user
    */
-  static async validateUserCredentials(
-    username: string,
-    password: string,
-  ) {
+  static async validateUserCredentials(username: string, password: string) {
     const user = await User.findOne({ username }).lean()
     if (!user) return null
 
@@ -105,10 +102,7 @@ class UserService {
    * @param userId - ID of the user to update
    * @param userData - New user data
    */
-  static async updateUser(
-    userId: string,
-    userData: Partial<IUser>,
-  ) {
+  static async updateUser(userId: string, userData: Partial<IUser>) {
     // Hash the password only if it's provided
     if (userData.password) {
       userData.password = await bcrypt.hash(userData.password, 10)

@@ -1,10 +1,14 @@
 import express, { Application, Request, Response } from 'express'
+import { connect } from 'mongoose'
 import cors from 'cors'
 import helmet from 'helmet'
 import { config } from 'dotenv'
 import cookieParser from 'cookie-parser'
-import authRoute from "./routes/auth/auth.route";
-import {connect} from "mongoose";
+
+import authRoute from './routes/auth/auth.routes'
+import apiRoute from './routes/api.routes'
+
+// import Authenticate from './middleware/authenticate.middleware'
 
 config()
 
@@ -23,6 +27,7 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.use('/auth', authRoute)
+app.use('/api', apiRoute)
 
 // Start server
 const startServer = async () => {
